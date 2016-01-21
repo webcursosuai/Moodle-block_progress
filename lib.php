@@ -270,16 +270,6 @@ function block_progress_monitorable_modules() {
             ),
             'defaultAction' => 'viewed'
         ),
-        'dmelearn' => array(
-            'actions' => array(
-                'finished'     => "SELECT id
-                                     FROM {dmelearn_entries}
-                                    WHERE dmelearn = :eventid
-                                      AND grade >= 100
-                                      AND userid = :userid"
-            ),
-            'defaultAction' => 'finished'
-        ),
         'equella' => array(
             'actions' => array(
                 'viewed' => array (
@@ -1226,7 +1216,7 @@ function block_progress_bar($modules, $config, $events, $userid, $instance, $att
         $percentageoptions = array('class' => 'progressPercentage');
         $content .= HTML_WRITER::tag('div', $percentagecontent, $percentageoptions);
     }
-
+    
     // Add the info box below the table.
     $divoptions = array('class' => 'progressEventInfo',
                         'id' => 'progressBarInfo'.$instance.'-'.$userid.'-info');
@@ -1439,4 +1429,137 @@ function block_progress_get_coursemodule($module, $recordid, $courseid, $userid 
     else {
         return get_coursemodule_from_instance($module, $recordid, $courseid);
     }
+}
+
+/**
+ * Gets the user inmediatly next test date and returns it.
+ * 
+ * @param int $courseid Course id
+ * @return string Next test date
+ */
+function block_progress_get_dates($courseid){
+	global $DB, $USER;
+	$sql = "
+	SELECT * 
+	FROM {block_progress}
+	WHERE userid = :id AND test_time > :date AND courseid = :courseid
+	ORDER BY test_time ASC
+	LIMIT 1
+	";
+	$userdate = $DB -> get_record_sql($sql, array('id' =>$USER->id, 'date' => time(), 'courseid'=>$courseid));
+	if(isset($userdate->test_name)){
+	return $userdate->test_name."<br>".date("d-m-Y",$userdate->test_time)."<br>".$userdate->modulo." ". $userdate->room;
+	}else{
+		return " No hay pruebas para mostrar";
+	}
+
+}
+/**
+ * Creats a file wich shows if the resourses/activities where attempt, if they have grade, if thay passed and
+ * if there was no attempt at all
+ * @param int $courseid Course id
+ * @param array $users array containing object with users id, firstname and lastname
+ */
+function block_progress_download_excel($courseid,$coursename, $users){
+	global $DB;
+	
+	$downloadfilename = clean_filename ( "$coursename.xls" );
+	// Creating a workbook
+	$workbook = new MoodleExcelWorkbook ( "-" );
+	// Sending HTTP headers
+	$workbook->send ( $downloadfilename );
+	// Adding the worksheet
+	$myxls = $workbook->add_worksheet ( $coursename );
+
+	//sql to find the quizzes from a certain user
+	$sql_quiz="
+			SELECT q.id AS quizid, q.name, qg.grade
+			FROM {quiz} AS q
+			join {quiz_grades} AS qg
+			ON (q.id=qg.quiz)
+			WHERE q.course=:courseid AND qg.userid=:userid";
+	//sql to find the assigns from a certain user
+	$sql_assign="
+			SELECT a.id AS assignid, a.name, s.status, ag.grade 
+			FROM {assign_submission} AS s
+			LEFT JOIN {assign_grades} AS ag
+			ON (ag.assignment=s.assignment and ag.userid=s.userid) 
+			INNER JOIN {assign} AS a 
+			ON a.id=s.assignment
+			WHERE a.course=:courseid AND s.userid=:userid";
+	
+	
+	//header
+	$sql_header_quiz="
+			SELECT id, name
+			FROM {quiz}
+			WHERE course=:courseid";
+	$sql_header_assign="
+			SELECT id, name
+			FROM {assign}
+			WHERE course=:courseid";
+	
+	$quiz_headers=$DB->get_records_sql($sql_header_quiz, array('courseid'=>$courseid));
+	$assign_headers=$DB->get_records_sql($sql_header_assign, array('courseid'=>$courseid));
+	$headers[]="Name";
+	foreach($quiz_headers as $quiz_header){
+		$headers[]=$quiz_header->name." grade";
+	}
+	foreach($assign_headers as $assign_header){
+		$headers[]=$assign_header->name." Status";
+		$headers[]=$assign_header->name." grade";
+	}
+	//gtting header written in excel
+	$row=0;
+	$col=0;
+	foreach ( $headers  as $header ) {
+		$myxls->write_string ( $row, $col, $header );
+		$col ++;
+	}
+	$row=1;
+	//loop to inseter every user that was asked in the excel file
+	foreach($users as $user){
+		//creating mold array to fill in
+		foreach($quiz_headers as $quiz_header){
+			$base_quiz[$quiz_header->id]="Nulo";
+		}
+		foreach($assign_headers as $assign_header){
+			$base_assign[$assign_header->id]=array("status"=>"Nulo", "grade"=>"Nulo");
+		}
+		$col=0;
+		//writing the name
+		$name=$user->firstname." ".$user->lastname;
+		$myxls->write_string( $row, $col,  $name);
+		$col++;
+		//getting quizzes and assigns
+		$quizzes = $DB->get_records_sql($sql_quiz, array('courseid'=> $courseid, 'userid'=>$user->id));
+		$assigns = $DB->get_records_sql($sql_assign, array('courseid'=> $courseid, 'userid'=>$user->id));
+		//putting quizzes in the mold array
+		foreach($quizzes as $quiz) {
+			$base_quiz[$quiz->quizid]=$quiz->grade;
+		}
+		//putting quizzes in the excel file
+		foreach($base_quiz as $input){
+			$myxls->write_string($row, $col, $input);
+			$col++;
+		}
+		//putting assigns in the mold array
+		foreach($assigns as $assign){
+			if(!is_null($assign->grade)){
+			$base_assign[$assign->assignid]=array("status"=>$assign->status, "grade"=>$assign->grade);
+			}else{
+				$base_assign[$assign->assignid]=array("status"=>$assign->status, "grade"=>"NULO");
+			}
+		}
+		//putting assigns in the excel file
+		foreach($base_assign as $input){
+			$myxls->write_string($row, $col, $input["status"]);
+			$col++;
+			$myxls->write_number($row, $col, $input["grade"]);
+			$col++;
+		}
+		$row++;
+		
+	}
+	$workbook->close ();
 }
