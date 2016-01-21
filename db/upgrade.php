@@ -44,6 +44,8 @@
  */
 function xmldb_block_progress_upgrade($oldversion, $block) {
     global $DB;
+    
+    $dbman = $DB->get_manager();
 
     // Fix bad filtering on posted_to values.
     if ($oldversion >= 2013073000 && $oldversion < 2013080500) {
@@ -83,6 +85,184 @@ function xmldb_block_progress_upgrade($oldversion, $block) {
             }
         }
     }
+    if ($oldversion < 2015122801) {
+    
+    	// Define table block_progress to be created.
+    	$table = new xmldb_table('block_progress');
+    
+    	// Adding fields to table block_progress.
+    	$table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+    	$table->add_field('userid', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+    	$table->add_field('day', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+    	$table->add_field('month', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+    	$table->add_field('year', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+    	$table->add_field('hour', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+    	$table->add_field('minute', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+    	$table->add_field('room', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+    
+    	// Adding keys to table block_progress.
+    	$table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+    
+    	// Conditionally launch create table for block_progress.
+    	if (!$dbman->table_exists($table)) {
+    		$dbman->create_table($table);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122801, 'progress');
+    }
+    if ($oldversion < 2015122802) {
+    
+    	// Define field test_name to be added to block_progress.
+    	$table = new xmldb_table('block_progress');
+    	$field = new xmldb_field('test_name', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'room');
+    
+    	// Conditionally launch add field test_name.
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122802, 'progress');
+    }
+    if ($oldversion < 2015122803) {
+    
+    	// Define field id to be dropped from block_progress.
+    	$table = new xmldb_table('block_progress');
+    	$field = new xmldb_field('day');
+    
+    	// Conditionally launch drop field id.
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->drop_field($table, $field);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122803, 'progress');
+    }
+    if ($oldversion < 2015122804) {
+    
+    	// Define field id to be dropped from block_progress.
+    	$table = new xmldb_table('block_progress');
+    	$field = new xmldb_field('month');
+    
+    	// Conditionally launch drop field id.
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->drop_field($table, $field);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122804, 'progress');
+    }
+    if ($oldversion < 2015122805) {
+    
+    	// Define field id to be dropped from block_progress.
+    	$table = new xmldb_table('block_progress');
+    	$field = new xmldb_field('year');
+    
+    	// Conditionally launch drop field id.
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->drop_field($table, $field);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122805, 'progress');
+    }
+    if ($oldversion < 2015122806) {
+    
+    	// Define field id to be dropped from block_progress.
+    	$table = new xmldb_table('block_progress');
+    	$field = new xmldb_field('hour');
+    
+    	// Conditionally launch drop field id.
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->drop_field($table, $field);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122806, 'progress');
+    }
+    if ($oldversion < 2015122807) {
+    
+    	// Define field id to be dropped from block_progress.
+    	$table = new xmldb_table('block_progress');
+    	$field = new xmldb_field('minute');
+    
+    	// Conditionally launch drop field id.
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->drop_field($table, $field);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122807, 'progress');
+    }
+    if ($oldversion < 2015122808) {
+    
+    	// Define field test_time to be added to block_progress.
+    	$table = new xmldb_table('block_progress');
+    	$field = new xmldb_field('test_time', XMLDB_TYPE_INTEGER, '20', null, null, null, null, 'userid');
+    
+    	// Conditionally launch add field test_time.
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122808, 'progress');
+    }
+    if ($oldversion < 2015122809) {
+    
+    	// Define field id to be added to block_progress.
+    	$table = new xmldb_table('block_progress');
+    	$field = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
+    
+    	// Conditionally launch add field id.
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122809, 'progress');
+    }
+if ($oldversion < 2015122811) {
 
+        // Changing nullability of field test_time on table block_progress to not null.
+        $table = new xmldb_table('block_progress');
+        $field = new xmldb_field('test_time', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null, 'userid');
+
+        // Launch change of nullability for field test_time.
+        $dbman->change_field_notnull($table, $field);
+
+        // Progress savepoint reached.
+        upgrade_block_savepoint(true, 2015122811, 'progress');
+    }
+    if ($oldversion < 2015122812) {
+    
+    	// Define field modulo to be added to block_progress.
+    	$table = new xmldb_table('block_progress');
+    	$field = new xmldb_field('modulo', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'test_name');
+    
+    	// Conditionally launch add field modulo.
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122812, 'progress');
+    }
+    if ($oldversion < 2015122900) {
+    
+    	// Define field courseid to be added to block_progress.
+    	$table = new xmldb_table('block_progress');
+    	$field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null, 'modulo');
+    
+    	// Conditionally launch add field courseid.
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    
+    	// Progress savepoint reached.
+    	upgrade_block_savepoint(true, 2015122900, 'progress');
+    }
+    
     return true;
 }

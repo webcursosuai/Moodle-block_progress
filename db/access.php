@@ -62,4 +62,13 @@ $capabilities = array (
 
         'clonepermissionsfrom' => 'moodle/my:manageblocks'
     ),
+    'block/progress:adddate'=>array(
+    'riskbitmask'=>RISK_PERSONAL,
+	'captype'       => 'read',
+    'contextlevel'  => CONTEXT_COURSE,
+    'archetypes'    => array (
+    	'manager'           => CAP_ALLOW,
+		)
+    )
 );
+//TODO Crear capability para coordinador solamente

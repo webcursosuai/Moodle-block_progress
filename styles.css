@@ -130,6 +130,10 @@
     margin: 10px;
 }
 
+.block_progress .testButton {
+    margin: 10px;
+}
+
 #page-blocks-progress-overview .buttons {
     margin-top: 20px;
     text-align: left;

@@ -42,6 +42,7 @@ class block_progress extends block_base {
      */
     public function init() {
         $this->title = get_string('config_default_title', 'block_progress');
+        
     }
 
     /**
@@ -117,6 +118,7 @@ class block_progress extends block_base {
         if (!isloggedin() or isguestuser()) {
             return $this->content;
         }
+       
 
         // Draw the multi-bar content for the Dashboard and Front page.
         if (block_progress_on_site_page()) {
@@ -250,6 +252,7 @@ class block_progress extends block_base {
             }
 
             // Display progress bar.
+            if(!has_capability('block/progress:overview', $this->context)){
             $attempts = block_progress_attempts($modules, $this->config, $events, $USER->id, $COURSE->id);
             $this->content->text = block_progress_bar($modules,
                                                       $this->config,
@@ -259,14 +262,23 @@ class block_progress extends block_base {
                                                       $attempts,
                                                       $COURSE->id);
             $blockinstancesonpage = array($this->instance->id);
-
+            }
+            // Presencial test date display
+            $this->content->text.= block_progress_get_dates($COURSE-> id);
+            
             // Allow teachers to access the overview page.
             if (has_capability('block/progress:overview', $this->context)) {
                 $parameters = array('progressbarid' => $this->instance->id, 'courseid' => $COURSE->id);
-                $url = new moodle_url('/blocks/progress/overview.php', $parameters);
-                $label = get_string('overview', 'block_progress');
-                $options = array('class' => 'overviewButton');
-                $this->content->text .= $OUTPUT->single_button($url, $label, 'post', $options);
+                $overviewurl = new moodle_url('/blocks/progress/overview.php', $parameters);
+                $overviewlabel = get_string('overview', 'block_progress');
+                $overviewoptions = array('class' => 'overviewButton');
+                $testurl = new moodle_url('/blocks/progress/upload.php', $parameters);
+                $testlabel = get_string('adddate', 'block_progress');
+            	$testoptions = array('class' => 'testButton');
+            	if (has_capability('block/progress:adddate', $this->context)){
+            	$this->content->text .= $OUTPUT->single_button($testurl, $testlabel, 'post', $testoptions);
+            	}
+                $this->content->text .= $OUTPUT->single_button($overviewurl, $overviewlabel, 'post', $overviewoptions);
             }
         }
 
@@ -279,7 +291,9 @@ class block_progress extends block_base {
         );
         $arguments = array($blockinstancesonpage, array($USER->id));
         $this->page->requires->js_init_call('M.block_progress.init', $arguments, false, $jsmodule);
-
+		
+        
         return $this->content;
+        
     }
 }

@@ -33,7 +33,6 @@ $string['certificate'] = 'Certificate';
 $string['chat'] = 'Chat';
 $string['choice'] = 'Choice';
 $string['data'] = 'Database';
-$string['dmelearn'] = 'Digital Media e-Learning';
 $string['equella'] = 'Equella';
 $string['feedback'] = 'Feedback';
 $string['flashcardtrainer'] = 'Flashcard trainer';
@@ -212,3 +211,12 @@ $string['cachedef_cachedlogs'] = 'Progress Bar log query caching';
 
 // For My home page.
 $string['no_blocks'] = "No Progress Bar blocks are set up for your courses.";
+
+// Date
+$string['adddate'] = 'Add dates';
+$string['testform'] = 'Evaluation date upload';
+$string['onlycsv'] = 'Only CSV format';
+$string['uploadsucces'] = 'Succesfull upload';
+$string['back'] = 'Back';
+$string['uploaderror'] = ' Unseccesfull file upload: the file contain invalid id numbers';
+$string['exceldownload'] = 'Download Excel';
